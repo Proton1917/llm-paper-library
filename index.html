@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="按研究方向整理的大语言模型论文库，收录论文原文、中文译本、中英对照版和组会资料。">
+  <link rel="icon" href="data:,">
+  <title>大语言模型论文库</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --background: #f8f6f2;
+      --paper: #fffefa;
+      --ink: #29263a;
+      --muted: #625b6c;
+      --line: #e1dbe5;
+      --accent: #5c4184;
+      --accent-deep: #37284f;
+      --accent-light: #eee7f6;
+      --serif: Georgia, "Songti SC", "Noto Serif CJK SC", "Noto Serif SC", SimSun, serif;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--ink);
+      font: 16px/1.55 var(--sans);
+    }
+    a { color: inherit; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    [hidden] { display: none !important; }
+    :focus-visible {
+      outline: 2px solid #7251a2;
+      outline-offset: 3px;
+    }
+    .wrap { width: min(1120px, calc(100% - 64px)); margin-inline: auto; }
+
+    .site-header {
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+    .header-inner {
+      min-height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      column-gap: 24px;
+    }
+    .brand, .site-nav {
+      display: flex;
+      align-items: center;
+    }
+    .brand {
+      font-weight: 680;
+      letter-spacing: .045em;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .book-mark {
+      display: inline-grid;
+      place-items: center;
+      margin-right: 10px;
+      width: 31px;
+      height: 31px;
+      border-radius: 8px;
+      background: var(--accent-deep);
+    }
+    .book-mark::before {
+      content: "";
+      width: 16px;
+      height: 12px;
+      border: 1px solid #f7edf9;
+      border-radius: 3px 3px 2px 2px;
+      background: linear-gradient(90deg, transparent 47%, #f7edf9 47% 53%, transparent 53%);
+    }
+    .site-nav { gap: clamp(14px, 3vw, 34px); }
+    .site-nav a {
+      color: var(--muted);
+      font-size: .88rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    a:hover { color: var(--accent); }
+    .site-nav a:hover, .seminar-title:hover { text-decoration: underline; }
+
+    .intro {
+      background: linear-gradient(112deg, #f8ebde, #f8efe9 48%, #ede9f6);
+      border-bottom: 1px solid var(--line);
+    }
+    .intro-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(300px, .58fr);
+      align-items: center;
+      gap: 42px;
+      padding: clamp(34px, 6vw, 75px) 0;
+    }
+    h1, h2, .paper-title, .seminar-title { font-family: var(--serif); }
+    h1 {
+      font-size: clamp(2.25rem, 5.3vw, 4.4rem);
+      line-height: 1.14;
+      letter-spacing: -.06em;
+      margin: 0 0 18px;
+    }
+    .intro p {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(.93rem, 1.8vw, 1.06rem);
+      line-height: 1.75;
+    }
+    .collection-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin: 0;
+      gap: 8px;
+    }
+    .collection-stats div {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      min-width: 0;
+      padding: 21px 6px 18px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-top: 3px solid;
+      border-radius: 8px;
+      box-shadow: 0 5px 16px #40295910;
+    }
+    .collection-stats div:nth-child(1) { color: #553779; background: #f5edf9; border-top-color: #946bbd; }
+    .collection-stats div:nth-child(2) { color: #7b4a24; background: #f9eee1; border-top-color: #cb8954; }
+    .collection-stats div:nth-child(3) { color: #354e73; background: #edf1f9; border-top-color: #688ab9; }
+    .collection-stats dt { font-size: .82rem; }
+    .collection-stats dd {
+      margin: 0 0 5px;
+      font: 2.35rem/1 var(--serif);
+      font-variant-numeric: tabular-nums;
+    }
+
+    main { padding-bottom: 64px; }
+    .catalog { padding-top: 40px; }
+    .catalog-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin: 0;
+      font-size: clamp(1.55rem, 3vw, 2.1rem);
+      line-height: 1.35;
+      letter-spacing: -.03em;
+    }
+    .search { position: relative; width: min(100%, 300px); }
+    .search::before, .search::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+    .search::before {
+      width: 12px;
+      height: 12px;
+      top: 14px;
+      left: 14px;
+      border: 1.5px solid var(--muted);
+      border-radius: 50%;
+    }
+    .search::after {
+      width: 6px;
+      height: 1.5px;
+      top: 26px;
+      left: 24px;
+      background: var(--muted);
+      transform: rotate(45deg);
+    }
+    .search input {
+      width: 100%;
+      min-height: 43px;
+      padding: 8px 14px 8px 40px;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+    }
+    .search input::placeholder { color: var(--muted); }
+    .filters, .editions, .reader-actions, .reader-editions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .filters { margin-bottom: 22px; }
+    .filter, .reader-version {
+      padding: 7px 16px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      color: var(--muted);
+      background: var(--paper);
+      font-size: .86rem;
+    }
+    .filter:hover, .reader-version:hover { border-color: #aa99bc; color: var(--ink); }
+    .filter[aria-pressed="true"], .reader-version[aria-pressed="true"] {
+      border-color: var(--accent-deep);
+      background: var(--accent-deep);
+      color: #fff;
+    }
+    .result-status {
+      margin: -5px 0 15px;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+    .papers {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .paper {
+      --topic-tint: #eee7f6;
+      --topic-ink: #553779;
+      --topic-line: #ae8ace;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 23px 25px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--topic-line);
+      border-radius: 10px;
+    }
+    .paper[data-topic="推理与优化"] {
+      --topic-tint: #f6eddd;
+      --topic-ink: #735027;
+      --topic-line: #ca9b61;
+    }
+    .paper[data-topic="智能体系统"] {
+      --topic-tint: #e7eef8;
+      --topic-ink: #364e74;
+      --topic-line: #819ec7;
+    }
+    .paper[data-topic="软件测试"] {
+      --topic-tint: #f6e8ee;
+      --topic-ink: #77405b;
+      --topic-line: #ca85a6;
+    }
+    .topic {
+      align-self: start;
+      padding: 3px 9px;
+      border-radius: 4px;
+      background: var(--topic-tint);
+      color: var(--topic-ink);
+      font-size: .78rem;
+      font-weight: 580;
+    }
+    .paper-title {
+      margin: 0 0 4px;
+      font-size: clamp(1.2rem, 2vw, 1.55rem);
+      font-weight: 600;
+      line-height: 1.29;
+      letter-spacing: -.018em;
+      overflow-wrap: anywhere;
+    }
+    .editions { margin-top: auto; }
+    .edition, .reader-external {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 35px;
+      padding: 5px 11px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--paper);
+      color: var(--accent-deep);
+      font-size: .82rem;
+      font-weight: 580;
+      text-decoration: none;
+    }
+    .edition:first-child { background: var(--topic-tint); color: var(--topic-ink); }
+    .edition:hover, .reader-external:hover { border-color: var(--accent); background: var(--accent-light); }
+    .empty {
+      margin: 0;
+      padding: 30px 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: var(--paper);
+    }
+
+    .seminars {
+      margin-top: 44px;
+      padding-top: 26px;
+      border-top: 1px solid var(--line);
+    }
+    .seminar-list { padding: 0; margin: 16px 0 0; list-style: none; }
+    .seminar-list li + li { margin-top: 12px; }
+    .seminar-title { font-size: 1.2rem; font-weight: 600; text-underline-offset: 4px; }
+    .seminar-description { margin: 4px 0 0; color: var(--muted); font-size: .91rem; }
+
+    .reader {
+      width: min(1120px, calc(100% - 40px));
+      height: min(900px, calc(100% - 40px));
+      max-width: none;
+      max-height: none;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      color: var(--ink);
+      box-shadow: 0 15px 80px #251b3a70;
+      overflow: hidden;
+    }
+    .reader::backdrop { background: #25203699; }
+    .reader[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+    .reader-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 15px 19px;
+      border-bottom: 1px solid var(--line);
+    }
+    .reader-main { min-width: 0; }
+    .reader-header h2 { margin-bottom: 8px; font-size: 1.2rem; overflow-wrap: anywhere; }
+    .reader-version { padding: 4px 10px; font-size: .77rem; }
+    .reader-actions { flex: none; }
+    .reader-close {
+      min-height: 35px;
+      padding: 5px 12px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--paper);
+      color: var(--ink);
+      font-size: .82rem;
+    }
+    .reader-close:hover { background: var(--accent-light); }
+    .reader-frame { width: 100%; height: 100%; border: 0; background: #eeedf1; }
+
+    @media (max-width: 790px) {
+      .wrap { width: calc(100% - 40px); }
+      .intro-inner { grid-template-columns: 1fr; gap: 25px; }
+      .collection-stats { max-width: 470px; }
+      .collection-stats div { padding: 16px 5px 13px; }
+      .collection-stats dd { font-size: 1.9rem; }
+      .paper { padding: 19px; }
+    }
+    @media (max-width: 580px) {
+      .wrap { width: calc(100% - 32px); }
+      .header-inner { min-height: 56px; column-gap: 10px; }
+      .site-nav { gap: 12px; }
+      .site-nav a { font-size: .75rem; }
+      .book-mark { margin-right: 7px; width: 25px; height: 25px; }
+      .brand { font-size: .87rem; }
+      h1 { letter-spacing: -.045em; }
+      .catalog { padding-top: 27px; }
+      .catalog-heading { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 14px; }
+      .search { width: 100%; }
+      .filters { gap: 6px; margin-bottom: 16px; }
+      .filter { padding: 6px 11px; font-size: .8rem; }
+      .papers { grid-template-columns: minmax(0, 1fr); gap: 11px; }
+      .reader { width: 100%; height: 100%; border-radius: 0; }
+      .reader-header { align-items: flex-start; flex-direction: column; gap: 10px; padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="./index.html" class="brand"><span class="book-mark" aria-hidden="true"></span>论文库</a>
+      <nav class="site-nav" aria-label="站点导航">
+        <a href="#catalog">论文目录</a>
+        <a href="#seminars">组会资料</a>
+        <a href="https://github.com/Proton1917/llm-paper-library">GitHub <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="intro" aria-labelledby="site-title">
+    <div class="wrap intro-inner">
+      <div>
+        <h1 id="site-title">大语言模型论文库</h1>
+        <p>按研究方向浏览论文原文、中文译本和中英对照版。</p>
+      </div>
+      <dl class="collection-stats" aria-label="馆藏统计" hidden>
+        <div><dt>篇论文</dt><dd id="paper-total"></dd></div>
+        <div><dt>个研究方向</dt><dd id="topic-total"></dd></div>
+        <div><dt>份 PDF</dt><dd id="pdf-total"></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <section class="catalog" id="catalog" aria-labelledby="catalog-title">
+      <div class="catalog-heading">
+        <h2 id="catalog-title">论文目录</h2>
+        <div class="search" role="search" hidden>
+          <input id="paper-search" type="search" placeholder="搜索论文标题或编号" aria-label="搜索论文标题或编号">
+        </div>
+      </div>
+      <div class="filters" role="group" aria-label="按研究方向筛选"></div>
+      <p class="result-status" role="status" hidden></p>
+      <div class="papers"></div>
+      <p class="empty" hidden>换一个标题、编号或研究方向再搜索。</p>
+      <noscript><p>启用 JavaScript 以使用网页阅读器，或打开 <a href="./README.md">论文文件索引</a>。</p></noscript>
+    </section>
+
+    <section class="seminars" id="seminars" aria-labelledby="seminars-title">
+      <h2 id="seminars-title">组会资料</h2>
+      <ul class="seminar-list"></ul>
+    </section>
+  </main>
+
+  <dialog class="reader" aria-labelledby="reader-title">
+    <div class="reader-header">
+      <div class="reader-main">
+        <h2 id="reader-title"></h2>
+        <div class="reader-editions" role="group" aria-label="选择阅读版本"></div>
+      </div>
+      <div class="reader-actions">
+        <a class="reader-external" target="_blank" rel="noopener">在新标签页打开 <span aria-hidden="true">↗</span></a>
+        <form method="dialog"><button class="reader-close">关闭</button></form>
+      </div>
+    </div>
+    <iframe class="reader-frame" title="论文 PDF 阅读器"></iframe>
+  </dialog>
+
+  <script src="./catalog.js"></script>
+  <script>
+    const { papers, seminars } = libraryCatalog;
+    const topics = [...new Set(papers.map(paper => paper.topic))];
+    const filters = document.querySelector('.filters');
+    const search = document.querySelector('#paper-search');
+    const resultStatus = document.querySelector('.result-status');
+    const container = document.querySelector('.papers');
+    const empty = document.querySelector('.empty');
+    const reader = document.querySelector('.reader');
+    const readerTitle = document.querySelector('#reader-title');
+    const readerEditions = document.querySelector('.reader-editions');
+    const readerExternal = document.querySelector('.reader-external');
+    const readerFrame = document.querySelector('.reader-frame');
+    let selectedTopic = '';
+
+    function element(tag, className, label) {
+      const node = document.createElement(tag);
+      node.className = className;
+      if (label !== undefined) node.textContent = label;
+      return node;
+    }
+
+    function chooseEdition(paper, selected) {
+      const version = paper.versions[selected];
+      const pdf = new URL(version.href, document.baseURI);
+      readerExternal.href = pdf.href;
+      readerFrame.title = `${paper.title} · ${version.label}`;
+      readerFrame.src = pdf.href;
+      Array.from(readerEditions.children).forEach((button, index) => {
+        button.setAttribute('aria-pressed', String(index === selected));
+      });
+    }
+
+    function openReader(paper, index) {
+      readerTitle.textContent = paper.title;
+      readerEditions.replaceChildren(...paper.versions.map((version, position) => {
+        const button = element('button', 'reader-version', version.label);
+        button.type = 'button';
+        button.addEventListener('click', () => chooseEdition(paper, position));
+        return button;
+      }));
+      chooseEdition(paper, index);
+      reader.showModal();
+    }
+
+    function paperCard(paper) {
+      const card = element('article', 'paper');
+      card.dataset.topic = paper.topic;
+      const topic = element('span', 'topic', paper.topic);
+      const title = element('h3', 'paper-title', paper.title);
+      const editions = element('div', 'editions');
+      paper.versions.forEach((version, index) => {
+        const link = element('a', 'edition', version.label);
+        link.href = version.href;
+        if (index === 0) {
+          const arrow = element('span', 'edition-arrow', '→');
+          arrow.setAttribute('aria-hidden', 'true');
+          link.append(arrow);
+        }
+        link.addEventListener('click', event => {
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          openReader(paper, index);
+        });
+        editions.append(link);
+      });
+      card.append(topic, title, editions);
+      return card;
+    }
+
+    const cards = papers.map(paper => {
+      const node = paperCard(paper);
+      const terms = [paper.title, paper.topic, ...paper.versions.flatMap(version => [version.label, decodeURIComponent(version.href)])];
+      return { topic: paper.topic, node, terms: terms.join(' ').toLowerCase() };
+    });
+    container.append(...cards.map(card => card.node));
+
+    function filterPapers() {
+      const query = search.value.toLowerCase().trim();
+      const words = query ? query.split(/\s+/) : [];
+      let matches = 0;
+      for (const card of cards) {
+        const visible = (!selectedTopic || card.topic === selectedTopic) && words.every(word => card.terms.includes(word));
+        card.node.hidden = !visible;
+        if (visible) matches += 1;
+      }
+      empty.hidden = matches > 0;
+      resultStatus.textContent = `找到 ${matches} 篇论文`;
+      resultStatus.hidden = !query && !selectedTopic;
+    }
+
+    const topicButtons = ['', ...topics].map(topic => {
+      const button = element('button', 'filter', topic || '全部');
+      button.type = 'button';
+      button.setAttribute('aria-pressed', String(!topic));
+      button.addEventListener('click', () => {
+        selectedTopic = topic;
+        topicButtons.forEach(entry => entry.setAttribute('aria-pressed', String(entry === button)));
+        filterPapers();
+      });
+      return button;
+    });
+    filters.append(...topicButtons);
+    search.addEventListener('input', filterPapers);
+    search.parentElement.hidden = false;
+
+    document.querySelector('#paper-total').textContent = papers.length;
+    document.querySelector('#topic-total').textContent = topics.length;
+    document.querySelector('#pdf-total').textContent = papers.reduce((sum, paper) => sum + paper.versions.length, 0);
+    document.querySelector('.collection-stats').hidden = false;
+
+    const seminarList = document.querySelector('.seminar-list');
+    for (const seminar of seminars) {
+      const item = document.createElement('li');
+      const link = element('a', 'seminar-title', seminar.label);
+      link.href = seminar.href;
+      item.append(link);
+      if (seminar.description) item.append(element('p', 'seminar-description', seminar.description));
+      seminarList.append(item);
+    }
+    reader.addEventListener('close', () => readerFrame.removeAttribute('src'));
+  </script>
+</body>
+</html>
