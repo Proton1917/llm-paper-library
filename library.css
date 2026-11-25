@@ -1,0 +1,96 @@
+:root {
+  color-scheme: light;
+  --background: #f8f6f2;
+  --paper: #fffefa;
+  --ink: #29263a;
+  --muted: #625b6c;
+  --line: #e1dbe5;
+  --accent: #5c4184;
+  --accent-deep: #37284f;
+  --accent-light: #eee7f6;
+  --focus: #7251a2;
+  --title-background: linear-gradient(112deg, #f8ebde, #f8efe9 48%, #ede9f6);
+  --serif: Georgia, "Songti SC", "Noto Serif CJK SC", "Noto Serif SC", SimSun, serif;
+  --sans: system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.wrap { width: min(1120px, calc(100% - 64px)); margin-inline: auto; }
+
+.site-header {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font: 16px/1.55 var(--sans);
+}
+
+.header-inner {
+  min-height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 24px;
+}
+
+.brand, .site-nav { display: flex; align-items: center; }
+.brand {
+  color: var(--ink);
+  font-weight: 680;
+  letter-spacing: .045em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.book-mark {
+  display: inline-grid;
+  place-items: center;
+  margin-right: 10px;
+  width: 31px;
+  height: 31px;
+  border-radius: 8px;
+  background: var(--accent-deep);
+}
+
+.book-mark::before {
+  content: "";
+  width: 16px;
+  height: 12px;
+  border: 1px solid #f7edf9;
+  border-radius: 3px 3px 2px 2px;
+  background: linear-gradient(90deg, transparent 47%, #f7edf9 47% 53%, transparent 53%);
+}
+
+.site-nav { gap: clamp(14px, 3vw, 34px); }
+.site-nav a {
+  color: var(--muted);
+  font-size: .88rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-nav a:hover { color: var(--accent); text-decoration: underline; }
+
+.site-nav .library-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  color: var(--accent-deep);
+  font-weight: 650;
+}
+
+@media (max-width: 790px) {
+  .wrap { width: calc(100% - 40px); }
+}
+
+@media (max-width: 580px) {
+  .wrap { width: calc(100% - 32px); }
+  .header-inner { min-height: 56px; column-gap: 10px; }
+  .site-nav { gap: 12px; }
+  .site-nav a { font-size: .75rem; }
+  .site-nav .library-return { min-height: 40px; }
+  .book-mark { margin-right: 7px; width: 25px; height: 25px; }
+  .brand { font-size: .87rem; }
+}

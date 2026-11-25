@@ -330,30 +330,28 @@ http://scripts.sil.org/OFL</script>
 
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="沿着一个 token 读懂 Inkling 2 Mini 的共享循环、块注意力残差、消息门和计算代价。">
-<title>Inkling 2 Mini 的循环架构 · 模型组会</title>
-<style>/* Braun Lo-fi 设计令牌。只有浅色主题;点缀色只有一个(--accent),面积 <1%。 */
+<title>Inkling 2 Mini 的循环架构 · 大语言模型论文库</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../library.css">
+<style>
 :root {
   --font-sans: "Barlow", "Noto Sans SC", "PingFang SC", "Microsoft YaHei UI", system-ui, sans-serif;
   --font-cond: "Barlow Semi Condensed", "Barlow", "Noto Sans SC", sans-serif;   /* 大数字用窄体 */
   --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
 
-  --bg: #E8EBEE;        /* 冷白灰纸 */
-  --surface: #F3F5F7;   /* 仅浮层与输入 */
-  --ink: #14171A;       /* 冷黑 */
-  --ink-2: #434A52;
-  --ink-3: #5C636B;     /* 次要文字,在 --bg 上对比度约 5.1:1 */
-  --rule: #C3C9D0;      /* 细线 */
-  --line-strong: #97A0AA;
-  --tint: rgba(0, 0, 0, .05);
-
-  --accent: #D97757;         /* Claude 陶土:线条 / 指针 / 选中高亮(2.6:1,只做辅助强调) */
-  --accent-strong: #B25A3D;  /* 按钮底色,白字约 4.8:1 */
+  --bg: var(--background);
+  --surface: var(--paper);
+  --ink-2: #4a4357;
+  --ink-3: var(--muted);
+  --rule: var(--line);
+  --line-strong: #a49bad;
+  --tint: var(--accent-light);
+  --accent-strong: var(--accent-deep);
 
   --ok: #3E7D63; --warn: #A67C1F; --bad: #B5483D;   /* 状态色:低饱和,只做小方块,旁边必有文字 */
-  --chart-grid: #CDD3DA; --series-2: #8A929C;
+  --chart-grid: var(--line); --series-2: #8494ad;
 }
-/* Braun Lo-fi 基础样式(依赖 tokens.css)。已实测渲染正常。 */
-*, *::before, *::after { box-sizing: border-box; margin: 0; border-radius: 0; }   /* 一个圆角都没有 */
+*, *::before, *::after { box-sizing: border-box; margin: 0; }
 html { -webkit-text-size-adjust: 100%; }
 body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--font-sans); letter-spacing: .005em; -webkit-font-smoothing: antialiased; min-height: 100vh; min-height: 100dvh; overflow-x: clip; }
 .page { max-width: 1120px; margin: 0 auto; padding: 56px max(40px, env(safe-area-inset-right)) max(96px, calc(env(safe-area-inset-bottom) + 48px)) max(40px, env(safe-area-inset-left)); }
@@ -372,7 +370,7 @@ h1 { font: 500 28px/1.2 var(--font-sans); letter-spacing: -.01em; }
 .table-wrap { max-width: 100%; }
 .cell-main, .cell-sub { min-width: 0; overflow-wrap: anywhere; }   /* 邮箱、长密钥允许断行 */
 
-/* 刻度条:进度 / 掌握程度 / 用量。细基线 + 每 10% 一根短刻度(50% 稍长)+ 基线上一段实心粗线 + 末端陶土指针 */
+/* 刻度条每 10% 标一格，用实线和强调色指针标出进度。 */
 .meter { position: relative; height: 18px; border-bottom: 1px solid var(--line-strong); background: linear-gradient(90deg, var(--line-strong) 1px, transparent 1px) left bottom / 10% 7px repeat-x; }
 .meter::before { content: ""; position: absolute; left: 50%; bottom: 0; width: 1px; height: 12px; background: var(--line-strong); }
 .meter::after { content: ""; position: absolute; right: 0; bottom: 0; width: 1px; height: 7px; background: var(--line-strong); }
@@ -402,24 +400,24 @@ table.is-stacked td::before { content: attr(data-label); color: var(--ink-3); fo
 table.is-stacked td > * { min-width: 0; }
 @media (max-width: 420px) { table.is-stacked td { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
 
-/* 按钮:强调型 = 深陶土底 + 白字 */
+/* 主按钮使用深色背景和白字。 */
 .btn { height: 36px; padding: 0 16px; border: 0; background: transparent; box-shadow: inset 0 0 0 1px var(--ink); color: var(--ink); font: 600 14px var(--font-sans); cursor: pointer; }
 .btn:hover { background: var(--tint); }
 .btn.primary { background: var(--accent-strong); color: #fff; box-shadow: none; }
-.btn.primary:hover { background: #9C4B30; }
+.btn.primary:hover { background: var(--accent); }
 
-/* 分段 / 选项卡:纯文字,选中 = 下方一条陶土线 */
+/* 分段控件用强调色下划线标出所选选项。 */
 .seg { display: inline-flex; flex-wrap: wrap; gap: 4px 20px; }
 .seg button { height: 30px; padding: 0; border: 0; background: none; color: var(--ink-3); font: 500 14px var(--font-sans); cursor: pointer; }
 .seg button:hover { color: var(--ink); }
 .seg button[aria-pressed=true] { color: var(--ink); font-weight: 600; box-shadow: inset 0 -2px 0 var(--accent); }
 
-/* 选项方块(套餐 / 金额 / 测验选项):选中 = 墨色描边 + 下方一条陶土线 */
+/* 选项方块用描边和强调色下划线标出选中状态。 */
 .tier { padding: 18px; border: 0; background: transparent; box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--ink); text-align: left; cursor: pointer; }
 .tier:hover { box-shadow: inset 0 0 0 1px var(--ink); }
 .tier[aria-checked=true] { box-shadow: inset 0 0 0 1px var(--ink), inset 0 -3px 0 var(--accent); }
 
-/* 下拉选项:选中 = 加粗 + 下方陶土线;悬停只改底色,叠加也读得清 */
+/* 下拉菜单用粗体和强调色下划线标出所选选项。 */
 .dd-opt { padding: 10px 12px; cursor: pointer; font-weight: 500; }
 .dd-opt.act { background: var(--tint); }
 .dd-opt[aria-selected=true] { color: var(--ink); font-weight: 700; box-shadow: inset 0 -2px 0 var(--accent); }
@@ -449,28 +447,27 @@ svg path, svg circle, svg line, svg polyline { stroke-linecap: butt; stroke-line
 @media (pointer: coarse) { .btn, .seg button { min-height: 44px; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 @media (max-width: 640px) { .page { padding-top: 32px; padding-bottom: 72px; padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); } .grid { gap: 36px; } }
-:root{color-scheme:light}
-html{scroll-padding-top:18px}
-body{font-size:16px;line-height:1.65;font-variant-numeric:tabular-nums;overflow-x:visible}
-.sheet{max-width:1264px;margin:auto;padding:0 clamp(20px,5.4vw,72px) 35px}
+html{scroll-padding-top:76px}
+body{font:16px/1.65 var(--sans);font-variant-numeric:tabular-nums;overflow-x:visible}
+.sheet{padding:32px 0 35px}
 a{color:var(--ink-2);text-underline-offset:4px;text-decoration-color:var(--line-strong);text-decoration-thickness:1px}
 a:hover{text-decoration-color:var(--accent-strong);color:var(--ink)}
 button,summary{color:inherit;font:inherit}
-.skip{position:absolute;left:8px;top:-100px;padding:8px;background:var(--surface);z-index:5}.skip:focus{top:8px}
-.mast{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:69px;border-bottom:1px solid var(--rule)}
-.mastname{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px}.mastname i{width:10px;height:10px;background:var(--ink)}
+.seminar-library-header{position:sticky;top:0;z-index:5}
+.skip{position:absolute;left:8px;top:-100px;padding:8px;background:var(--surface);z-index:6}.skip:focus{top:8px}
+.mast{display:flex;align-items:center;min-height:56px;border-bottom:1px solid var(--rule)}
 .mast nav{display:flex;gap:clamp(15px,2vw,32px);flex-wrap:wrap}.mast nav a{font-size:14px;text-decoration:none;padding:5px 0;color:var(--ink-2)}.mast nav a:hover{box-shadow:inset 0 -2px var(--accent)}
-.cover{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:44px;padding:47px 0 40px;border-bottom:2px solid var(--ink)}
+.cover{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:32px;padding:clamp(26px,4vw,46px);border:1px solid var(--line);border-radius:12px;background:var(--title-background)}
 .byline,.rubric{font-weight:500;font-size:14px;color:var(--ink-3)}.byline{font-size:16px;line-height:1.3;margin-bottom:7px}
-.cover h1{font-family:var(--font-cond);font-size:clamp(48px,4.75vw,70px);font-weight:500;letter-spacing:-.035em;line-height:1.12}
-.cover h1 span{display:inline-block;font:500 clamp(29px,2.9vw,44px)/1.3 var(--font-sans);margin-left:.22em;letter-spacing:-.05em}
+.cover h1{font-family:var(--serif);font-size:clamp(42px,4.2vw,63px);font-weight:600;letter-spacing:-.035em;line-height:1.12}
+.cover h1 span{display:inline-block;font:600 clamp(28px,2.6vw,40px)/1.3 var(--serif);margin-left:.18em;letter-spacing:-.05em}
 .intro{margin-top:17px;max-width:40em;font-size:17px;color:var(--ink-2);line-height:1.8}
-.readout{display:flex;align-items:start;gap:clamp(10px,1.2vw,20px);padding:0 0 7px 28px;border-left:1px solid var(--rule)}
+.readout{display:flex;align-items:start;gap:clamp(10px,1.2vw,20px);padding:14px 16px;border:1px solid var(--rule);border-radius:8px;background:var(--surface)}
 .readout div{display:grid;gap:4px}.readout span{font:400 clamp(70px,6.3vw,95px)/.95 var(--font-cond);letter-spacing:-.055em}.readout small{color:var(--ink-3);font-size:13px;white-space:nowrap}.readout svg{width:35px;height:24px;margin-top:26px;stroke:var(--ink-3);stroke-width:1.4;fill:none}
 .chapter{padding-top:26px;margin-top:60px;border-top:1px solid var(--line-strong);min-width:0;scroll-margin-top:10px}
 #overview{margin-top:0;border:0;padding-top:26px}
 .secthead{display:flex;align-items:baseline;gap:16px;margin-bottom:24px}.partno{font:500 16px/1 var(--font-cond);color:var(--ink-3)}.secthead .rubric{margin:0 0 2px}
-.secthead h2{font-size:clamp(24px,2.2vw,33px);font-weight:550;line-height:1.4;letter-spacing:-.04em}
+.secthead h2{font-family:var(--serif);font-size:clamp(24px,2.2vw,33px);font-weight:600;line-height:1.4;letter-spacing:-.04em}
 .diagram-layout{display:grid;grid-template-columns:minmax(0,2.46fr) minmax(218px,1fr);gap:clamp(20px,3vw,42px);align-items:start}
 .board{min-width:0}.boardline{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);min-height:48px}.boardline>span{font-size:14px;color:var(--ink-3)}
 .modebar{display:flex;align-items:stretch;gap:15px}.modebar button{font-size:14px;min-height:43px;background:none;border:0;cursor:pointer;padding:4px 0;position:relative}.modebar button:hover{background:var(--tint)}.modebar button[aria-pressed=true]{font-weight:650}.modebar button[aria-pressed=true]::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
@@ -491,7 +488,7 @@ button,summary{color:inherit;font:inherit}
 #mainmap .wirelabel{fill:var(--ink-2);font-size:13px}
 #mainmap .smalltag{fill:var(--ink-3);font-family:var(--font-cond);font-size:14px}
 .board figcaption{margin:0;font-size:14px;line-height:1.7;color:var(--ink-2);min-height:2.8em}
-.reader{border-top:1px solid var(--ink);padding-top:13px}.reader .rubric{font-size:13px}.reader h3{font-size:23px;font-weight:550;margin:5px 0 10px;letter-spacing:-.02em}.reader p:not(.rubric){font-size:15px;color:var(--ink-2);line-height:1.8}.reader dl{margin:15px 0 12px}.reader dl div{display:grid;grid-template-columns:2.4em 1fr;gap:8px;padding:7px 0;border-top:1px solid var(--rule);font-size:14px;line-height:1.55}.reader dt{color:var(--ink-3)}
+.reader{border:1px solid var(--line);border-left:3px solid #ae8ace;border-radius:10px;padding:16px;background:var(--surface)}.reader .rubric{font-size:13px}.reader h3{font-size:23px;font-weight:550;margin:5px 0 10px;letter-spacing:-.02em}.reader p:not(.rubric){font-size:15px;color:var(--ink-2);line-height:1.8}.reader dl{margin:15px 0 12px}.reader dl div{display:grid;grid-template-columns:2.4em 1fr;gap:8px;padding:7px 0;border-top:1px solid var(--rule);font-size:14px;line-height:1.55}.reader dt{color:var(--ink-3)}
 .jump,.underboard a,.costrefs,.foot a{font-size:14px}.underboard{margin-top:15px;padding-top:13px;border-top:1px solid var(--rule);display:flex;align-items:baseline;justify-content:space-between;gap:24px;color:var(--ink-2);font-size:15px}.underboard strong{color:var(--ink)}.underboard a{flex:none}
 .cost-ledger{border-top:1px solid var(--rule)}
 .ledgerow{display:grid;grid-template-columns:24% minmax(0,1fr);gap:28px;padding:20px 0;border-bottom:1px solid var(--rule);align-items:baseline}
@@ -501,21 +498,61 @@ button,summary{color:inherit;font:inherit}
 .foot{padding-top:28px;margin-top:64px;display:flex;align-items:start;justify-content:space-between;gap:35px;border-top:1px solid var(--ink)}.foot p{margin:6px 0}.foot div>a{margin-right:18px}.back{white-space:nowrap}
 @media(min-width:860px) and (max-width:1120px){.cover{gap:20px}.readout{padding-left:16px}.diagram-layout{gap:20px;grid-template-columns:minmax(0,2.3fr) minmax(200px,1fr)}}
 @media(max-width:1029px){.diagram-layout{display:block}.reader{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:5px 24px}.reader h3,.reader .rubric,.reader>p{grid-column:1}.reader dl{grid-column:2;grid-row:1/4;margin:0}.reader .jump{grid-column:1/-1}.readout{padding-left:17px}.readout span{font-size:68px}.readout svg{width:22px;margin-top:19px}.cover{gap:18px}.intro{font-size:16px}.cover h1 span{display:block;margin:2px 0 0}}
-@media(max-width:600px){.sheet{padding:0 max(18px,env(safe-area-inset-left)) 28px}.mast{gap:12px;min-height:51px}.mastname{font-size:14px;gap:6px;white-space:nowrap}.mastname i{width:7px;height:7px}.mast nav{gap:12px}.mast nav a{font-size:13px;display:inline-flex;align-items:center;min-height:44px}.cover{grid-template-columns:1fr;padding:26px 0 22px;gap:18px}.cover h1{font-size:47px;line-height:1.07}.cover h1 span{display:inline-block;font-size:26px;margin:2px 0 0 .18em}.byline{font-size:14px}.intro{margin-top:11px;line-height:1.75}.readout{border:0;padding:0;gap:14px;align-items:center}.readout div{display:flex;gap:6px;align-items:baseline}.readout span{font-size:36px}.readout svg{width:21px;height:12px;margin-top:1px}.readout small{font-size:13px}.chapter{margin-top:42px;padding-top:20px}.secthead{gap:11px;margin-bottom:15px}.secthead h2{font-size:24px}.secthead .rubric{font-size:13px}.boardline{min-height:44px}.modebar{gap:13px}.reader{display:block;padding-top:13px;margin-top:11px}.reader h3{font-size:21px}.reader dl{margin-top:12px}.reader .jump{min-height:44px;display:inline-flex;align-items:center}.underboard{display:block;margin-top:12px}.underboard a{display:inline-block;margin-top:6px}.ledgerow{grid-template-columns:1fr;gap:8px;padding:17px 0}.metric b{font-size:41px}.foot{display:block;margin-top:44px}.back{display:inline-block;margin-top:16px}.board figcaption{font-size:14px}}
-@media(max-width:410px){.cover h1 span{display:block;margin:4px 0 0}.mast nav{gap:9px}}
-@media print{.sheet{padding:0;max-width:none}.mast nav,.modebar,.skip,.back{display:none}.chapter{break-inside:auto}.ledgerow,.board,.reader{break-inside:avoid}.cover{padding:20px 0}.chapter{margin-top:30px}}
+@media(max-width:600px){
+  html{scroll-padding-top:66px}
+  .sheet{padding:18px 0 28px}
+  .mast{min-height:51px}
+  .mast nav{gap:0 14px}
+  .mast nav a{font-size:13px;display:inline-flex;align-items:center;min-height:44px}
+  .cover{grid-template-columns:minmax(0,1fr);padding:22px 18px 19px;gap:17px}
+  .cover h1{font-size:clamp(32px,10vw,46px);line-height:1.1}
+  .cover h1 span{display:block;font-size:25px;margin:4px 0 0}
+  .byline{font-size:14px}
+  .intro{margin-top:11px;line-height:1.75}
+  .readout{width:fit-content;max-width:100%;padding:8px 10px;gap:9px;align-items:center}
+  .readout div{display:flex;gap:4px;align-items:baseline}
+  .readout span{font-size:31px}
+  .readout svg{width:18px;height:12px;margin-top:1px}
+  .readout small{font-size:12px;white-space:normal}
+  .chapter{margin-top:42px;padding-top:20px}
+  .secthead{gap:11px;margin-bottom:15px}
+  .secthead h2{font-size:24px}
+  .secthead .rubric{font-size:13px}
+  .boardline{min-height:44px}
+  .modebar{gap:13px}
+  .reader{display:block;padding-top:13px;margin-top:11px}
+  .reader h3{font-size:21px}
+  .reader dl{margin-top:12px}
+  .reader .jump{min-height:44px;display:inline-flex;align-items:center}
+  .underboard{display:block;margin-top:12px}
+  .underboard a{display:inline-block;margin-top:6px}
+  .ledgerow{grid-template-columns:1fr;gap:8px;padding:17px 0}
+  .metric b{font-size:41px}
+  .foot{display:block;margin-top:44px}
+  .back{display:inline-block;margin-top:16px}
+  .board figcaption{font-size:14px}
+}
+@media print{.sheet{width:100%;padding:0}.seminar-library-header,.mast nav,.modebar,.skip,.back{display:none}.chapter{break-inside:auto}.ledgerow,.board,.reader{break-inside:avoid}.cover{padding:20px}.chapter{margin-top:30px}}
 </style>
 </head>
 <body>
 <a class="skip" href="#overview">跳至执行总图</a>
-<div class="sheet" id="top">
-  <header class="mast"><span class="mastname"><i aria-hidden="true"></i>模型组会</span><nav aria-label="讲义目录"><a href="#overview">执行总图</a><a href="#microscope">单层剖面</a><a href="#cost">计算代价</a><a href="#evidence">实验证据</a></nav></header>
+<header class="site-header seminar-library-header" id="top">
+  <div class="wrap header-inner">
+    <a href="../index.html" class="brand"><span class="book-mark" aria-hidden="true"></span>论文库</a>
+    <nav class="site-nav" aria-label="站点导航">
+      <a href="../index.html#seminars" class="library-return"><span aria-hidden="true">←</span>返回组会资料</a>
+    </nav>
+  </div>
+</header>
+<div class="wrap sheet">
   <main>
     <div class="cover">
-      <div><p class="byline">Thinking Machines Lab</p><h1>Inkling 2 Mini<span>的循环架构</span></h1>
+      <div><p class="byline">模型来源 · Thinking Machines Lab</p><h1>Inkling 2 Mini <span>的循环架构</span></h1>
         <p class="intro">同一组层跑三遍，为什么不是把同一道题重算三次？前两遍各留下两份块摘要。下一遍的每个循环层都可以从中挑选信息，改变自己接下来的计算。</p></div>
       <div class="readout" aria-label="24 层权重，每个 token 经过 48 次层计算"><div><span>24</span><small>层权重</small></div><svg viewBox="0 0 46 24" aria-hidden="true"><path d="M1 12H43M33 2L43 12L33 22"/></svg><div><span>48</span><small>次层计算 / token</small></div></div>
     </div>
+    <div class="mast"><nav aria-label="讲义目录"><a href="#overview">执行总图</a><a href="#microscope">单层剖面</a><a href="#cost">计算代价</a><a href="#evidence">实验证据</a></nav></div>
 
     <section id="overview" class="chapter">
       <header class="secthead"><span class="partno">01</span><div><p class="rubric">执行总图</p><h2>三遍从同一个前段出发</h2></div></header>
@@ -537,7 +574,7 @@ button,summary{color:inherit;font:inherit}
 
     <section id="microscope" class="chapter" aria-labelledby="micro-heading">
 <style>
-#microscope {--mi-bg:var(--bg,#e8ebee);--mi-tint:var(--tint,#dfe3e7);--mi-rule:var(--rule,#c3c9d0);--mi-ink:var(--ink,#14171a);--mi-2:var(--ink-2,#434a52);--mi-3:var(--ink-3,#5c636b);--mi-ac:var(--accent,#d97757);color:var(--mi-ink);scroll-margin-top:4.5rem}
+#microscope {--mi-bg:var(--bg);--mi-tint:var(--tint);--mi-rule:var(--rule);--mi-ink:var(--ink);--mi-2:var(--ink-2);--mi-3:var(--ink-3);--mi-ac:var(--accent);color:var(--mi-ink)}
 #microscope * {box-sizing:border-box}
 #microscope .mi-index {display:block;color:var(--mi-3);font-size:13px;font-weight:600;letter-spacing:.04em;margin-bottom:.5rem}
 #microscope h2 {margin:0 0 .55rem;font-weight:550;line-height:1.35}
@@ -556,7 +593,7 @@ button,summary{color:inherit;font:inherit}
 #microscope .mi-node {cursor:pointer}
 #microscope .mi-node .box {stroke:var(--mi-2);stroke-width:1.2;fill:var(--mi-bg);vector-effect:non-scaling-stroke}
 #microscope .mi-node.compute .box {fill:var(--mi-tint)}
-#microscope .mi-node:hover .box {fill:var(--surface,#f3f5f7)}
+#microscope .mi-node:hover .box {fill:var(--surface)}
 #microscope .mi-node[aria-pressed=true] .box {stroke:var(--mi-ink);stroke-width:1.65}
 #microscope .mi-node[aria-pressed=true] .mi-underline {display:block}
 #microscope .mi-underline {display:none;stroke:var(--mi-ac);stroke-width:2;vector-effect:non-scaling-stroke}
@@ -768,7 +805,7 @@ resize();if('ResizeObserver'in window)new ResizeObserver(resize).observe(svg.par
 </section>
 
 
-    <footer class="foot"><div><span class="rubric">延伸阅读</span><p>附件第 7 页对照三遍的总图，第 9–11 页跟读第二遍的消息。想核对实现，可从重置块状态的循环开始。</p><a href="https://github.com/huggingface/transformers/blob/main/src/transformers/models/inkling2_loop/modeling_inkling2_loop.py#L1397-L1426">Transformers · 循环前向实现</a> <a href="https://github.com/MoonshotAI/Attention-Residuals">Kimi · Attention Residuals</a></div><a class="back" href="#top">回到总图</a></footer>
+    <footer class="foot"><div><span class="rubric">延伸阅读</span><p>附件第 7 页对照三遍的总图，第 9–11 页跟读第二遍的消息。想核对实现，可从重置块状态的循环开始。</p><a href="https://github.com/huggingface/transformers/blob/main/src/transformers/models/inkling2_loop/modeling_inkling2_loop.py#L1397-L1426">Transformers · 循环前向实现</a> <a href="https://github.com/MoonshotAI/Attention-Residuals">Kimi · Attention Residuals</a></div><a class="back" href="../index.html#seminars">返回组会资料</a></footer>
   </main>
 </div>
 <script>(()=>{
